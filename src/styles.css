@@ -435,12 +435,12 @@ h2 { font-size: 15px; font-weight: 600; margin: 0 0 12px; }
 
 /* The spine: a continuous rule down the day, so the shape of it reads at a
    glance instead of dissolving into rows. */
-.spine { position: relative; padding-left: 96px; }
+.spine { position: relative; padding-left: 128px; }
 
 .spine::before {
   content: "";
   position: absolute;
-  left: 88px;
+  left: 120px;
   top: 6px;
   bottom: 6px;
   width: 1px;
@@ -469,9 +469,9 @@ h2 { font-size: 15px; font-weight: 600; margin: 0 0 12px; }
 
 .block-times {
   position: absolute;
-  left: -96px;
+  left: -128px;
   top: 12px;
-  width: 78px;
+  width: 110px;
   text-align: right;
   font-family: var(--mono);
   font-size: 12px;
@@ -585,4 +585,276 @@ h2 { font-size: 15px; font-weight: 600; margin: 0 0 12px; }
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
+}
+/* ── Sortable headers ──────────────────────────────────────────────────── */
+/* Append to the end of src/styles.css */
+
+.th-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.th-sort:hover { color: var(--ink); }
+
+.th-sort-active { color: var(--ink); }
+
+/* The idle caret sits faint until you hover or sort by that column, so the
+   header row reads as labels first and controls second. */
+.th-caret {
+  font-size: 8px;
+  opacity: 0.3;
+  line-height: 1;
+}
+
+.th-sort:hover .th-caret { opacity: 0.65; }
+.th-sort-active .th-caret { opacity: 1; }
+/* ── Sortable headers ──────────────────────────────────────────────────── */
+/* Append this whole block to the end of src/styles.css. If you already added
+   the .th-sort rules earlier, skip down to the "Day sheet time column" and
+   "Crew packet bar" sections. */
+
+.th-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.th-sort:hover { color: var(--ink); }
+.th-sort-active { color: var(--ink); }
+
+/* The idle caret sits faint until you hover or sort by that column, so the
+   header row reads as labels first and controls second. */
+.th-caret {
+  font-size: 8px;
+  opacity: 0.3;
+  line-height: 1;
+}
+
+.th-sort:hover .th-caret { opacity: 0.65; }
+.th-sort-active .th-caret { opacity: 1; }
+
+/* ── Day sheet time column ─────────────────────────────────────────────── */
+/* REPLACE the existing .spine, .spine::before, and .block-times rules with
+   these — the native time input needs room for AM/PM. */
+
+.spine { padding-left: 128px; }
+
+.spine::before { left: 120px; }
+
+.block-times {
+  left: -128px;
+  width: 110px;
+}
+
+/* ── Crew packet bar ───────────────────────────────────────────────────── */
+
+.packet-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 14px 18px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+
+.packet-title {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+.packet-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 720px) {
+  .packet-bar { flex-direction: column; align-items: flex-start; }
+  .packet-actions { margin-left: 0; width: 100%; }
+  .packet-actions .btn { flex: 1; justify-content: center; }
+}
+/* ── Contacts & roster ─────────────────────────────────────────────────── */
+/* Append this block to the end of src/styles.css */
+
+.contacts-table td { padding: 6px 8px; }
+
+.cell-input {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: var(--r);
+  padding: 4px 6px;
+  background: transparent;
+}
+
+.cell-input:hover:not(:disabled) { border-color: var(--line); }
+
+.cell-input:focus {
+  outline: none;
+  border-color: var(--slate-2);
+  background: var(--white);
+}
+
+.cell-input:disabled { color: var(--ink); }
+
+.contact-name {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 500;
+  padding: 4px 6px;
+}
+
+/* A quiet mark that someone will get the Slack invite. Not a badge — the
+   absence is what matters, and only when you go looking. */
+.slack-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--signal);
+  flex-shrink: 0;
+}
+
+/* Missing data reads as absent rather than as a value. */
+.gap { color: var(--line); }
+
+/* ── Roster picker ─────────────────────────────────────────────────────── */
+
+.picker { margin-top: 12px; }
+
+.picker-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.picker-list {
+  max-height: 260px;
+  overflow-y: auto;
+  border-top: 1px solid var(--line-soft);
+}
+
+.picker-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 8px;
+  border: none;
+  border-bottom: 1px solid var(--line-soft);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.picker-row:hover { background: var(--paper); }
+
+.picker-name { flex: 1; font-size: 13px; }
+
+@media (max-width: 720px) {
+  .contacts-table { font-size: 12px; }
+  .contacts-table th:nth-child(3),
+  .contacts-table td:nth-child(3) { display: none; }
+}
+/* ── Dark theme ────────────────────────────────────────────────────────── */
+/* Append to the end of src/styles.css.
+
+   Light stays the default. When the theme hook sets data-theme="dark" on
+   <html>, this block overrides the variables from :root — so every component
+   recolors without touching a single one of them.
+
+   These aren't the light values inverted. Dark UIs need lower-chroma accents
+   and softer "white" text, or they glare; each was picked by eye, not
+   flipped. */
+
+html[data-theme="dark"] {
+  --ink: #e6e9ec;          /* text — off-white, not pure white */
+  --slate: #1a1f26;        /* topbar / primary buttons */
+  --slate-2: #2a323d;
+  --line: #333b45;         /* borders */
+  --line-soft: #262c34;
+  --paper: #14181d;        /* app background */
+  --white: #1c2127;        /* card / input surfaces — a step up from paper */
+  --muted: #8994a1;
+
+  --amber: #d99133;
+  --amber-soft: #2c2313;   /* dark amber wash for "needs you" states */
+  --signal: #4f9d6b;
+  --signal-soft: #16271c;  /* dark green wash for "done" states */
+  --alert: #d66;
+  --alert-soft: #2c1717;
+}
+
+/* Inputs sit slightly above the card surface so fields read as editable
+   in dark, where a border alone is easy to miss. */
+html[data-theme="dark"] .input,
+html[data-theme="dark"] .textarea,
+html[data-theme="dark"] .select {
+  background: #232a32;
+}
+
+/* The event-row hover was a near-white tint that glows in dark. */
+html[data-theme="dark"] .event-row:hover td {
+  background: #20262e;
+}
+
+/* Table header background matches the paper tone rather than the light wash. */
+html[data-theme="dark"] .event-table th {
+  background: #1a1f26;
+}
+
+/* On-site pill is dark-on-dark by default; lift its text. */
+html[data-theme="dark"] .pill-onsite {
+  color: #e6e9ec;
+}
+
+/* The "missing data" dash was near-white; keep it faint in dark too. */
+html[data-theme="dark"] .gap {
+  color: #3a424c;
+}
+
+/* ── Theme toggle ──────────────────────────────────────────────────────── */
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--r);
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
 }

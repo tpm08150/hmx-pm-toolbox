@@ -81,10 +81,19 @@ export async function saveEvent(eventId, patch) {
 }
 
 /**
- * Create the event doc if it's new, or refresh only the Flex-sourced meta
- * fields if it exists. Never clobbers PM-entered content — a PM who renamed
- * the show or corrected the venue keeps their edit.
+ * Fields Flex owns outright. A routine sync keeps these current even when the
+ * event already exists — a PM reassignment in Flex should show up here without
+ * anyone opening the event.
  */
+const FLEX_OWNED = ["pmName", "salesperson", "plannedStart", "plannedEnd", "totalPrice", "docNumber"];
+
+/**
+ * Fields a PM may have corrected by hand. Only filled when still empty, so an
+ * edit survives every routine sync. "Refresh from Flex" on a single event
+ * overwrites them deliberately.
+ */
+const PM_EDITABLE = ["showName", "venue", "client"];
+
 export async function upsertEventFromFlex(flexEvent, { overwriteMeta = false } = {}) {
   const ref = doc(db, "events", flexEvent.flexId);
   const snap = await getDoc(ref);
@@ -113,40 +122,33 @@ export async function upsertEventFromFlex(flexEvent, { overwriteMeta = false } =
     return "created";
   }
 
+  const existing = snap.data().meta || {};
+  const patch = {};
+
   if (overwriteMeta) {
-    const patch = {};
-    for (const key of [
-      "docNumber",
-      "showName",
-      "venue",
-      "client",
-      "pmName",
-      "salesperson",
-      "plannedStart",
-      "plannedEnd",
-      "totalPrice",
-    ]) {
+    for (const key of [...FLEX_OWNED, ...PM_EDITABLE]) {
       if (flexEvent[key] !== undefined && flexEvent[key] !== "") {
         patch[`meta.${key}`] = flexEvent[key];
       }
     }
-    patch["meta.updatedAt"] = serverTimestamp();
-    await updateDoc(ref, patch);
-    return "updated";
+  } else {
+    // Flex-owned fields track Flex.
+    for (const key of FLEX_OWNED) {
+      const incoming = flexEvent[key];
+      if (incoming === undefined || incoming === "") continue;
+      if (existing[key] !== incoming) patch[`meta.${key}`] = incoming;
+    }
+    // PM-editable fields only fill blanks.
+    for (const key of PM_EDITABLE) {
+      if (!existing[key] && flexEvent[key]) patch[`meta.${key}`] = flexEvent[key];
+    }
   }
 
-  // Existing doc, light sync: only fill fields that are still empty.
-  const existing = snap.data().meta || {};
-  const patch = {};
-  for (const key of ["docNumber", "plannedStart", "plannedEnd", "totalPrice"]) {
-    if (!existing[key] && flexEvent[key]) patch[`meta.${key}`] = flexEvent[key];
-  }
-  if (Object.keys(patch).length) {
-    patch["meta.updatedAt"] = serverTimestamp();
-    await updateDoc(ref, patch);
-    return "touched";
-  }
-  return "unchanged";
+  if (!Object.keys(patch).length) return "unchanged";
+
+  patch["meta.updatedAt"] = serverTimestamp();
+  await updateDoc(ref, patch);
+  return overwriteMeta ? "updated" : "touched";
 }
 
 function defaultShowInfo() {
