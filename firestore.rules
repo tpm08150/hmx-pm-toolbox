@@ -1,0 +1,38 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // A signed-in user counts as staff only if their email has an allowlist doc.
+    function isStaff() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/allowlist/$(request.auth.token.email.lower()));
+    }
+
+    // Admin flag lives on the allowlist doc. Used for settings and task edits.
+    function isAdmin() {
+      return isStaff()
+        && get(/databases/$(database)/documents/allowlist/$(request.auth.token.email.lower())).data.admin == true;
+    }
+
+    // Allowlist: staff can read it (the app checks their own entry on sign-in),
+    // only an admin can change who has access.
+    match /allowlist/{email} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // Events: any staff member reads and writes. The edit lock is enforced in
+    // the app, not here, so a stuck lock can never block a legitimate save.
+    match /events/{eventId} {
+      allow read, write: if isStaff();
+    }
+
+    // Settings: everyone reads (rates and goals drive the expense sheet),
+    // only an admin writes.
+    match /settings/{doc} {
+      allow read: if isStaff();
+      allow write: if isAdmin();
+    }
+  }
+}
