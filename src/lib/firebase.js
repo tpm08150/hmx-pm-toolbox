@@ -48,12 +48,6 @@ export function watchAuth(callback) {
   return onAuthStateChanged(auth, callback);
 }
 
-/**
- * The allowlist is a Firestore collection keyed by email. A user who signs in
- * with Google but has no allowlist doc gets read-nothing access, enforced by
- * the security rules — this check just gives them a clear message instead of
- * a wall of permission errors.
- */
 export async function checkAllowed(email) {
   if (!email) return null;
   const snap = await getDoc(doc(db, "allowlist", email.toLowerCase()));
@@ -80,18 +74,7 @@ export async function saveEvent(eventId, patch) {
   });
 }
 
-/**
- * Fields Flex owns outright. A routine sync keeps these current even when the
- * event already exists — a PM reassignment in Flex should show up here without
- * anyone opening the event.
- */
 const FLEX_OWNED = ["pmName", "salesperson", "plannedStart", "plannedEnd", "totalPrice", "docNumber"];
-
-/**
- * Fields a PM may have corrected by hand. Only filled when still empty, so an
- * edit survives every routine sync. "Refresh from Flex" on a single event
- * overwrites them deliberately.
- */
 const PM_EDITABLE = ["showName", "venue", "client"];
 
 export async function upsertEventFromFlex(flexEvent, { overwriteMeta = false } = {}) {
@@ -117,6 +100,7 @@ export async function upsertEventFromFlex(flexEvent, { overwriteMeta = false } =
       checklist: {},
       showInfo: defaultShowInfo(),
       days: [],
+      contacts: [],
       lock: null,
     });
     return "created";
@@ -132,13 +116,11 @@ export async function upsertEventFromFlex(flexEvent, { overwriteMeta = false } =
       }
     }
   } else {
-    // Flex-owned fields track Flex.
     for (const key of FLEX_OWNED) {
       const incoming = flexEvent[key];
       if (incoming === undefined || incoming === "") continue;
       if (existing[key] !== incoming) patch[`meta.${key}`] = incoming;
     }
-    // PM-editable fields only fill blanks.
     for (const key of PM_EDITABLE) {
       if (!existing[key] && flexEvent[key]) patch[`meta.${key}`] = flexEvent[key];
     }
@@ -159,17 +141,6 @@ function defaultShowInfo() {
     { id: crypto.randomUUID(), header: "Rigging", body: "", order: 3 },
     { id: crypto.randomUUID(), header: "Power", body: "", order: 4 },
   ];
-}
-
-// ── Settings ─────────────────────────────────────────────────────────────────
-
-export async function getSettings() {
-  const snap = await getDoc(doc(db, "settings", "global"));
-  return snap.exists() ? snap.data() : null;
-}
-
-export async function saveSettings(patch) {
-  await setDoc(doc(db, "settings", "global"), patch, { merge: true });
 }
 
 export { serverTimestamp };

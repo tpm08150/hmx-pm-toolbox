@@ -619,54 +619,6 @@ h2 { font-size: 15px; font-weight: 600; margin: 0 0 12px; }
 
 .th-sort:hover .th-caret { opacity: 0.65; }
 .th-sort-active .th-caret { opacity: 1; }
-/* ── Sortable headers ──────────────────────────────────────────────────── */
-/* Append this whole block to the end of src/styles.css. If you already added
-   the .th-sort rules earlier, skip down to the "Day sheet time column" and
-   "Crew packet bar" sections. */
-
-.th-sort {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  border: none;
-  background: transparent;
-  padding: 0;
-  cursor: pointer;
-  font-family: var(--mono);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  font-weight: 500;
-}
-
-.th-sort:hover { color: var(--ink); }
-.th-sort-active { color: var(--ink); }
-
-/* The idle caret sits faint until you hover or sort by that column, so the
-   header row reads as labels first and controls second. */
-.th-caret {
-  font-size: 8px;
-  opacity: 0.3;
-  line-height: 1;
-}
-
-.th-sort:hover .th-caret { opacity: 0.65; }
-.th-sort-active .th-caret { opacity: 1; }
-
-/* ── Day sheet time column ─────────────────────────────────────────────── */
-/* REPLACE the existing .spine, .spine::before, and .block-times rules with
-   these — the native time input needs room for AM/PM. */
-
-.spine { padding-left: 128px; }
-
-.spine::before { left: 120px; }
-
-.block-times {
-  left: -128px;
-  width: 110px;
-}
-
 /* ── Crew packet bar ───────────────────────────────────────────────────── */
 
 .packet-bar {
@@ -857,4 +809,1389 @@ html[data-theme="dark"] .gap {
 
 .theme-toggle:hover {
   background: rgba(255, 255, 255, 0.08);
+}
+/* ── Travel request ────────────────────────────────────────────────────── */
+/* Append to the end of src/styles.css */
+
+.travel-types {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 0 16px;
+  border-bottom: 1px solid var(--line-soft);
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.travel-type {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.travel-type input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--slate);
+  cursor: pointer;
+}
+
+.travel-travelers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* name | from | to | depart | return | total | remove */
+.traveler-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 130px 130px 76px 32px;
+  gap: 8px;
+  align-items: center;
+}
+
+.traveler-row .input { padding: 6px 8px; }
+
+.traveler-total {
+  font-size: 12px;
+  text-align: right;
+  color: var(--signal);
+  font-weight: 500;
+}
+
+@media (max-width: 860px) {
+  .traveler-row {
+    grid-template-columns: 1fr 1fr;
+    padding: 10px;
+    border: 1px solid var(--line-soft);
+    border-radius: var(--r);
+  }
+  .traveler-total { grid-column: 1 / -1; text-align: left; }
+}
+/* ── Production report ─────────────────────────────────────────────────── */
+/* Append to the end of src/styles.css */
+
+.reviews {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* name | role | attitude | technical | prep | cust svc | notes | remove */
+.review-row {
+  display: grid;
+  grid-template-columns: 1.3fr 1.1fr 76px 76px 66px 92px 1.4fr 32px;
+  gap: 6px;
+  align-items: center;
+}
+
+.review-row .input,
+.review-row .select { padding: 6px 7px; }
+
+.rating-select { text-align: center; }
+
+.rating-legend {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.legend-line {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.legend-line b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 900px) {
+  .review-row {
+    grid-template-columns: 1fr 1fr;
+    padding: 10px;
+    border: 1px solid var(--line-soft);
+    border-radius: var(--r);
+  }
+  .review-row .rating-select { grid-column: auto; }
+}
+/* ── Timecards ─────────────────────────────────────────────────────────── */
+/* Append to the end of src/styles.css */
+
+.timecard-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.crew-name {
+  font-size: 15px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.timecard-filters {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.timecard-filters .select { width: auto; min-width: 108px; }
+
+.timecard-actions { display: flex; gap: 6px; }
+
+.timecard-summary {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+
+.unapproved-count { color: var(--amber); }
+
+.timecard-table td { padding: 8px 12px; }
+
+.timecard-table input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--signal);
+  cursor: pointer;
+}
+
+.row-selected td { background: var(--amber-soft); }
+
+/* Row actions stay quiet until you're on the row — with a long crew list,
+   a button on every line is visual noise. */
+.row-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+
+tr:hover .row-actions,
+tr:focus-within .row-actions,
+.row-selected .row-actions { opacity: 1; }
+
+@media (max-width: 820px) {
+  .timecard-filters { margin-left: 0; width: 100%; }
+  .timecard-filters .select { flex: 1; min-width: 0; }
+  .row-actions { opacity: 1; }
+  .timecard-table th:nth-child(4),
+  .timecard-table td:nth-child(4) { display: none; }
+}
+/* ── Contacts sync ─────────────────────────────────────────────────────── */
+/* Append to the end of src/styles.css */
+
+.contacts-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+/* Someone dropped from the Shiftboard schedule. Struck through rather than
+   deleted — the PM may have edited the row, and a silent removal would lose
+   that without them ever seeing it. */
+.contact-dropped .contact-name,
+.contact-dropped .cell-input {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.contact-dropped td { background: var(--paper); }
+/* ── Files ─────────────────────────────────────────────────────────────── */
+/* Append to the end of src/styles.css */
+
+.files-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.crumb {
+  border: none;
+  background: transparent;
+  padding: 3px 5px;
+  border-radius: var(--r);
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.crumb:hover { background: var(--line-soft); color: var(--ink); }
+
+.crumb-current { color: var(--ink); font-weight: 500; }
+
+.crumb-sep { color: var(--line); padding: 0 1px; }
+
+.files-actions { display: flex; gap: 6px; }
+
+.files-table td { padding: 7px 12px; }
+
+.file-name {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: none;
+  background: transparent;
+  padding: 3px 0;
+  cursor: pointer;
+  font-size: 13px;
+  text-align: left;
+  width: 100%;
+}
+
+.file-name:hover { color: var(--amber); }
+
+.file-icon { font-size: 14px; flex-shrink: 0; }
+
+.file-row:hover td { background: var(--paper); }
+
+/* ── Preview ───────────────────────────────────────────────────────────── */
+
+.preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 24, 29, 0.62);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  z-index: 50;
+}
+
+.preview-box {
+  background: var(--white);
+  border-radius: var(--r);
+  width: 100%;
+  max-width: 940px;
+  height: 100%;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.preview-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+.preview-title {
+  font-weight: 600;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preview-body {
+  flex: 1;
+  overflow: auto;
+  background: var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-frame { width: 100%; height: 100%; border: none; background: var(--white); }
+
+.preview-image { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+@media (max-width: 720px) {
+  .preview-overlay { padding: 0; }
+  .preview-box { max-height: 100vh; border-radius: 0; }
+  .files-actions { width: 100%; }
+  .files-actions .btn { flex: 1; justify-content: center; }
+  .row-actions { opacity: 1; }
+}
+/* ── Skeleton rows & transfer progress ─────────────────────────────────── */
+/* Append to the end of src/styles.css */
+
+/* Placeholder rows keep the table's shape while a listing loads, so nothing
+   jumps when the real names arrive. */
+.skeleton {
+  height: 11px;
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--line-soft) 25%,
+    var(--line) 37%,
+    var(--line-soft) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-sweep {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+/* ── Transfer bar ──────────────────────────────────────────────────────── */
+
+.transfer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  font-size: 13px;
+}
+
+.transfer-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 45%;
+  color: var(--muted);
+}
+
+.transfer-label b { color: var(--ink); font-weight: 500; }
+
+.transfer-track {
+  flex: 1;
+  height: 4px;
+  background: var(--line-soft);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.transfer-fill {
+  height: 100%;
+  background: var(--signal);
+  border-radius: 2px;
+  transition: width 0.15s linear;
+}
+
+.transfer-percent {
+  font-size: 12px;
+  color: var(--muted);
+  min-width: 34px;
+  text-align: right;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; background: var(--line-soft); }
+  .transfer-fill { transition: none; }
+}
+/* ── PO request ────────────────────────────────────────────────────────── */
+/* Append to the end of src/styles.css */
+
+.po-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+.po-wide { grid-column: span 3; }
+
+.po-code {
+  display: flex;
+  align-items: center;
+  padding: 7px 9px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r);
+  background: var(--paper);
+  font-size: 13px;
+  min-height: 34px;
+}
+
+.quote-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.quote-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 9px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r);
+  background: var(--paper);
+}
+
+.quote-name {
+  flex: 1;
+  font-size: 13px;
+  color: var(--ink);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quote-name:hover { color: var(--amber); text-decoration: underline; }
+
+/* The quote picker reuses the preview overlay, sized down — it's a list, not
+   a document. */
+.picker-box { max-width: 560px; max-height: 70vh; }
+
+.picker-body { align-items: flex-start; padding: 4px 0; }
+
+@media (max-width: 820px) {
+  .po-grid { grid-template-columns: 1fr; }
+  .po-wide { grid-column: span 1; }
+}
+/* ── Quote drop zone ───────────────────────────────────────────────────── */
+/* Append to the end of src/styles.css */
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 24px 18px;
+  margin-top: 10px;
+  border: 1px dashed var(--line);
+  border-radius: var(--r);
+  background: var(--paper);
+  cursor: pointer;
+  text-align: center;
+  font-size: 13px;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.dropzone:hover { border-color: #bcc3cb; }
+
+/* A dashed box is easy to miss mid-drag, so it commits to a colour the moment
+   something's over it. */
+.dropzone-active {
+  border-color: var(--amber);
+  border-style: solid;
+  background: var(--amber-soft);
+}
+
+.dropzone-icon {
+  font-size: 18px;
+  color: var(--muted);
+  line-height: 1;
+}
+
+.dropzone-active .dropzone-icon { color: var(--amber); }
+
+.dropzone:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+/* ── Labor request ─────────────────────────────────────────────────────── */
+/* Append to the end of src/styles.css */
+
+/* date | start | end | subject | role | qty | category | hours | actions */
+.shift-head,
+.shift-row {
+  display: grid;
+  grid-template-columns: 130px 105px 105px 1.3fr 1fr 62px 118px 56px 62px;
+  gap: 6px;
+  align-items: center;
+}
+
+.shift-head {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  padding: 0 2px 6px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 8px;
+}
+
+.shift-rows { display: flex; flex-direction: column; gap: 6px; }
+
+.shift-row .input,
+.shift-row .select { padding: 6px 7px; }
+
+.shift-hours {
+  text-align: right;
+  font-size: 12px;
+  color: var(--muted);
+  padding-right: 4px;
+}
+
+.shift-actions { display: flex; gap: 1px; }
+
+/* The import sheet takes more columns than the estimate needs, so the rest
+   fold away until someone wants them. */
+.shift-more {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.shift-more summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.shift-more summary:hover { color: var(--ink); }
+
+.shift-extra { margin-top: 14px; }
+
+.shift-extra-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 5px;
+}
+
+.shift-extra-wide { grid-column: span 4; }
+
+.estimate-table td { padding: 7px 12px; }
+
+.estimate-total td {
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+}
+
+
+@media (max-width: 980px) {
+  .shift-head { display: none; }
+  .shift-row {
+    grid-template-columns: 1fr 1fr;
+    padding: 10px;
+    border: 1px solid var(--line-soft);
+    border-radius: var(--r);
+  }
+  .shift-hours { grid-column: 1 / -1; text-align: left; }
+  .shift-extra-grid { grid-template-columns: 1fr 1fr; }
+  .shift-extra-wide { grid-column: span 2; }
+}
+/* ── Sticky submit bar ─────────────────────────────────────────────────── */
+/* Append to the end of src/styles.css */
+
+.submit-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin: 18px -4px 0;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  /* Lifts off the content scrolling underneath it. */
+  box-shadow: 0 -2px 12px rgba(20, 24, 29, 0.07);
+}
+
+html[data-theme="dark"] .submit-bar {
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.submit-spacer { flex: 1; }
+
+.submit-hint {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* The one action that sends something. Distinct from the slate primary used
+   for ordinary confirmations, so it reads as the end of the form. */
+.btn-send {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: #fff;
+  font-weight: 600;
+  padding: 8px 20px;
+}
+
+.btn-send:hover:not(:disabled) {
+  background: #b26d17;
+  border-color: #b26d17;
+}
+
+.btn-send:disabled {
+  background: var(--line);
+  border-color: var(--line);
+  color: var(--muted);
+  opacity: 1;
+}
+
+@media (max-width: 720px) {
+  .submit-bar { flex-wrap: wrap; margin-left: 0; margin-right: 0; }
+  .submit-hint { order: 3; width: 100%; }
+  .btn-send { flex: 1; justify-content: center; }
+}
+/* ── Expense sheet ─────────────────────────────────────────────────────── */
+
+/* The colour coding people already read the paper sheet by: red for rentals
+   and equipment, yellow for labor, blue for trucking, green for revenue,
+   grey for rental services. Held as variables so dark mode shifts them
+   without touching a single block. */
+:root {
+  --exp-revenue: #2f7d4f;
+  --exp-equipment: #b23c3c;
+  --exp-labor: #b8860b;
+  --exp-trucking: #2c6ea8;
+  --exp-services: #8b94a0;
+  --exp-commission: #7a5ba8;
+}
+
+html[data-theme="dark"] {
+  --exp-revenue: #62b184;
+  --exp-equipment: #d97b7b;
+  --exp-labor: #d9a93a;
+  --exp-trucking: #6ba3d9;
+  --exp-services: #8994a1;
+  --exp-commission: #a98ed4;
+}
+
+/* ── Headline figures ──────────────────────────────────────────────────── */
+
+.expense-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.figure {
+  padding: 12px 14px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--line);
+  border-radius: var(--r);
+}
+
+.figure-revenue { border-left-color: var(--exp-revenue); }
+.figure-cost { border-left-color: var(--exp-equipment); }
+.figure-good { border-left-color: var(--exp-revenue); }
+.figure-bad { border-left-color: var(--alert); }
+.figure-warn { border-left-color: var(--amber); }
+
+.figure-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.figure-value {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.figure-bad .figure-value { color: var(--alert); }
+
+.figure-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* ── Goal bars ─────────────────────────────────────────────────────────── */
+
+.goal-bars {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  margin-bottom: 16px;
+}
+
+.goal-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+.goal-delta { font-size: 11px; }
+
+.goal-over { color: var(--alert); font-weight: 600; }
+
+.goal-track {
+  height: 5px;
+  background: var(--line-soft);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.goal-fill {
+  height: 100%;
+  background: var(--signal);
+  border-radius: 3px;
+}
+
+.goal-fill-over { background: var(--alert); }
+
+/* ── Blocks ────────────────────────────────────────────────────────────── */
+
+.expense-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.exp-block {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--line);
+  border-radius: var(--r);
+  padding: 0 0 14px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.exp-wide { grid-column: span 2; }
+
+.exp-revenue-block { border-top-color: var(--exp-revenue); }
+.exp-equipment-block { border-top-color: var(--exp-equipment); }
+.exp-labor-block { border-top-color: var(--exp-labor); }
+.exp-trucking-block { border-top-color: var(--exp-trucking); }
+.exp-services-block { border-top-color: var(--exp-services); }
+.exp-commission-block { border-top-color: var(--exp-commission); }
+
+/* The head runs the full width so line items get the whole card rather than
+   sharing it with a title column. */
+.exp-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line-soft);
+  margin-bottom: 10px;
+}
+
+.exp-head h2 {
+  margin: 0;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.exp-total {
+  margin-left: auto;
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.exp-total-tag {
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-left: 6px;
+}
+
+.exp-note,
+.exp-empty {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 16px 10px;
+  padding: 4px 0 2px;
+}
+
+.warn-note { color: var(--amber); }
+
+/* ── Line tables ───────────────────────────────────────────────────────── */
+
+.exp-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  margin-bottom: 4px;
+}
+
+.exp-table td {
+  padding: 2px 4px;
+  vertical-align: middle;
+  min-width: 0;
+}
+
+.exp-table td:first-child { padding-left: 14px; }
+.exp-table td:last-child { padding-right: 10px; }
+
+.exp-table th {
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  font-weight: 500;
+  padding: 0 4px 5px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.exp-table th:first-child { padding-left: 14px; }
+
+.col-money { width: 116px; }
+.col-hours { width: 74px; }
+.col-x { width: 32px; }
+
+.exp-table th.col-money,
+.exp-table th.col-hours { text-align: right; }
+
+.num { text-align: right; }
+
+/* A vendor name runs out of room without pushing the cost column off. */
+.line-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  padding: 5px 0;
+  min-width: 0;
+}
+
+.line-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* A value the toolbox filled in and the PM can't type over. */
+.derived-value { display: block; padding: 5px 8px; }
+
+.row-derived td { background: var(--paper); }
+
+/* Marks where a line came from, so it's clear what's pulled in versus typed. */
+.src-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 1px 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.adj-tag { color: var(--amber); border-color: #efd9b0; }
+
+/* Fields meant to be filled in read as wells rather than flat text, so they
+   don't disappear against the card. */
+.cell-input.entry {
+  background: var(--paper);
+  border-color: var(--line-soft);
+}
+
+.cell-input.entry:hover:not(:disabled) { border-color: var(--line); }
+
+.cell-input.entry:focus {
+  background: var(--white);
+  border-color: var(--slate-2);
+}
+
+.exp-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 12px;
+  padding: 3px 16px;
+}
+
+.exp-foot-strong {
+  border-top: 1px solid var(--line);
+  margin-top: 5px;
+  padding-top: 8px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* ── Trucking ──────────────────────────────────────────────────────────── */
+
+.truck-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 0 16px;
+  margin-bottom: 12px;
+}
+
+.input-block { width: 100%; padding: 7px 9px; }
+
+/* ── Labor ─────────────────────────────────────────────────────────────── */
+
+/* Eight columns is a lot for a card; on a narrow layout it scrolls rather
+   than crushing every one of them. */
+.table-scroll { overflow-x: auto; }
+.table-scroll .labor-table { min-width: 640px; }
+
+.labor-table td { padding: 3px 4px; }
+
+.subblock {
+  margin: 14px 16px 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.subexp-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+/* Total sits beside its label; the button goes to the far right, matching the
+   block heads above. */
+.subexp-total {
+  font-size: 13px;
+  font-weight: 600;
+  margin-right: auto;
+}
+
+/* An invoice amount is a real figure, not a rate — it needs room. */
+.subblock .exp-table { table-layout: auto; }
+.subblock .exp-table .col-money { width: 170px; }
+.subblock .exp-table td { padding: 4px 6px 4px 0; }
+.subblock .exp-table td:first-child { padding-left: 0; padding-right: 12px; }
+.subblock .exp-empty { margin-left: 0; margin-right: 0; }
+
+/* ── Commission ────────────────────────────────────────────────────────── */
+
+.commission-row {
+  display: flex;
+  gap: 24px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  padding: 0 16px;
+}
+
+.commission-detail { font-size: 13px; }
+
+.commission-figure {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  margin-bottom: 2px;
+}
+
+/* ── Dismissed POs ─────────────────────────────────────────────────────── */
+
+.dismissed {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+
+.dismissed .exp-table td:first-child { padding-left: 0; }
+
+/* ── Narrow ────────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .expense-summary { grid-template-columns: 1fr 1fr; }
+  .goal-bars { grid-template-columns: 1fr; }
+  .expense-grid { grid-template-columns: 1fr; }
+  .exp-wide { grid-column: span 1; }
+  .truck-grid { grid-template-columns: 1fr 1fr; }
+  .subblock .exp-table .col-money { width: 130px; }
+}
+
+/* ── Budget dashboard ──────────────────────────────────────────────────── */
+
+.period-switch {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--line-soft);
+  border-radius: var(--r);
+}
+
+.period-btn {
+  border: none;
+  background: transparent;
+  padding: 5px 14px;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.period-btn:hover { color: var(--ink); }
+
+.period-btn-active {
+  background: var(--white);
+  color: var(--ink);
+}
+
+.dash {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+/* ── Period list ───────────────────────────────────────────────────────── */
+
+.dash-side {
+  position: sticky;
+  top: 12px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+
+.dash-group { margin-bottom: 4px; }
+
+.dash-period {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--white);
+  cursor: pointer;
+  text-align: left;
+}
+
+.dash-period:hover { border-color: #bcc3cb; }
+
+.dash-period-open {
+  border-color: var(--slate-2);
+  background: var(--paper);
+}
+
+.dash-period-label { font-weight: 600; font-size: 13px; flex: 1; }
+
+.dash-events {
+  padding: 4px 0 6px 10px;
+  border-left: 1px solid var(--line);
+  margin-left: 11px;
+}
+
+.dash-event {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: var(--r);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.dash-event:hover { background: var(--line-soft); }
+
+.dash-event-active { background: var(--slate); color: #fff; }
+
+.dash-event-name {
+  flex: 1;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-event-pct { font-size: 11px; color: var(--signal); }
+.dash-event-pct.neg { color: var(--alert); }
+.dash-event-active .dash-event-pct { color: #9fd8b6; }
+.dash-event-active .dash-event-pct.neg { color: #f0a0a0; }
+
+/* ── Detail ────────────────────────────────────────────────────────────── */
+
+.dash-main { min-width: 0; }
+
+.dash-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.dash-head h2 { margin: 0; font-size: 17px; }
+
+/* A second rank of figures, smaller than the headline four. */
+.dash-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.figure-small { padding: 9px 12px; }
+.figure-small .figure-value { font-size: 15px; }
+
+/* ── Charts ────────────────────────────────────────────────────────────── */
+
+.dash-charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.chart {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 13px 15px;
+}
+
+.chart-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.chart-bars { display: flex; flex-direction: column; gap: 4px; }
+
+/* Horizontal bars — show names are far too long for rotated axis labels. */
+.chart-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 9px;
+  align-items: center;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 2px 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.chart-row:hover .chart-label { color: var(--ink); }
+
+.chart-label {
+  font-size: 11px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chart-track {
+  height: 12px;
+  background: var(--line-soft);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.chart-fill {
+  display: block;
+  height: 100%;
+  background: var(--exp-revenue);
+  border-radius: 2px;
+}
+
+.chart-fill-neg { background: var(--alert); }
+
+.chart-value { font-size: 11px; white-space: nowrap; }
+.chart-value.neg { color: var(--alert); }
+
+/* ── Breakdown table ───────────────────────────────────────────────────── */
+
+.dash-table { font-size: 12px; min-width: 1000px; }
+.dash-table td { padding: 8px 10px; }
+.dash-table th { padding: 8px 10px; }
+.dash-table th.num { text-align: right; }
+
+.dash-total-row td {
+  border-top: 2px solid var(--line);
+  background: var(--paper);
+}
+
+.pct-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--signal-soft);
+  color: #1f5c39;
+  border: 1px solid #bcdcc8;
+}
+
+.pct-pill.neg {
+  background: var(--alert-soft);
+  color: #7d2626;
+  border-color: #e5c0c0;
+}
+
+html[data-theme="dark"] .pct-pill { color: #8fd0aa; }
+html[data-theme="dark"] .pct-pill.neg { color: #f0a0a0; }
+
+@media (max-width: 980px) {
+  .dash { grid-template-columns: 1fr; }
+  .dash-side { position: static; max-height: none; }
+  .dash-charts { grid-template-columns: 1fr; }
+}
+
+/* ── Labor request import ──────────────────────────────────────────────── */
+
+.import-panel {
+  margin-bottom: 16px;
+  border-left: 3px solid var(--amber);
+}
+
+/* A preview of what's about to land, so replacing the current shifts isn't a
+   leap of faith. */
+.import-preview {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.import-row {
+  display: grid;
+  grid-template-columns: 100px 110px 1fr 1fr 46px 110px;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 12px;
+  padding: 3px 0;
+}
+
+.import-row > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .import-row { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── Slim drop zone ────────────────────────────────────────────────────── */
+
+/* The labor import sits under a list of shift rows rather than standing alone,
+   so it reads as one line rather than a panel. */
+.dropzone-slim {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  text-align: left;
+  margin-top: 12px;
+}
+
+.dropzone-slim .dropzone-icon { font-size: 15px; }
+
+/* ── Browsing folder picker ────────────────────────────────────────────── */
+
+.picker-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.picker-crumbs {
+  padding: 6px 0 10px;
+  border-bottom: 1px solid var(--line-soft);
+  margin-bottom: 4px;
+}
+
+/* Where a Production Folder exists, offering it saves the usual two clicks
+   without forcing anyone into that shape. */
+.picker-suggest {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  margin: 8px 0;
+  background: var(--amber-soft);
+  border: 1px solid #efd9b0;
+  border-radius: var(--r);
+  font-size: 13px;
+}
+
+html[data-theme="dark"] .picker-suggest { border-color: #4a3a1c; }
+
+/* A row is two targets: the name opens the folder, the button links it. */
+.picker-row-split {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 6px 2px 0;
+  cursor: default;
+}
+
+.picker-row-split:hover { background: var(--paper); }
+
+.picker-open {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 7px 8px;
+  cursor: pointer;
+  text-align: left;
+  min-width: 0;
+}
+
+.picker-open .picker-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.picker-open:hover .picker-name { color: var(--amber); }
+
+.picker-foot {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
 }

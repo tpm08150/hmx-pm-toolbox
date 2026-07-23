@@ -8,19 +8,42 @@ import Checklist from "../tabs/Checklist";
 import ShowInfo from "../tabs/ShowInfo";
 import DaySheets from "../tabs/DaySheets";
 import Contacts from "../tabs/Contacts";
+import Files from "../tabs/Files";
+import LaborRequest from "../tabs/LaborRequest";
+import PoRequest from "../tabs/PoRequest";
+import ExpenseSheet from "../tabs/ExpenseSheet";
+import Travel from "../tabs/Travel";
+import ProductionReport from "../tabs/ProductionReport";
+import Timecards from "../tabs/Timecards";
 
+/**
+ * Files comes first: linking the FileCloud folder is the first thing a PM
+ * does, and half the other tabs lean on it.
+ */
 const TABS = [
+  { id: "files", label: "Files" },
   { id: "checklist", label: "Check list" },
+  { id: "labor", label: "Labor" },
+  { id: "travel", label: "Travel" },
   { id: "showinfo", label: "Show info" },
   { id: "days", label: "Day sheets" },
   { id: "contacts", label: "Contacts" },
+  { id: "po", label: "PO" },
+  { id: "expense", label: "Budget" },
+  { id: "report", label: "Production Report" },
+  { id: "timecards", label: "Timecards" },
 ];
+
+/** Tabs that end in their own action bar and don't want the packet bar too. */
+const NO_PACKET_BAR = new Set([
+  "files", "labor", "po", "expense", "travel", "report", "timecards",
+]);
 
 const SAVE_DELAY = 900;
 
 export default function EventDetail({ eventId, user, onBack }) {
   const [event, setEvent] = useState(null);
-  const [tab, setTab] = useState("checklist");
+  const [tab, setTab] = useState("files");
   const [saveState, setSaveState] = useState("idle");
   const [error, setError] = useState(null);
   const [notice, setNotice] = useState(null);
@@ -78,6 +101,15 @@ export default function EventDetail({ eventId, user, onBack }) {
     [eventId]
   );
 
+  /** Update one top-level field on the event, optimistically then saved. */
+  const setField = useCallback(
+    (key, value) => {
+      setEvent((prev) => ({ ...prev, [key]: value }));
+      queueSave({ [key]: value });
+    },
+    [queueSave]
+  );
+
   function toggleTask(taskId, done) {
     const entry = done
       ? { done: true, doneBy: user.displayName || user.email, doneAt: Date.now() }
@@ -90,19 +122,15 @@ export default function EventDetail({ eventId, user, onBack }) {
     queueSave({ [`checklist.${taskId}`]: entry });
   }
 
-  function updateShowInfo(sections) {
-    setEvent((prev) => ({ ...prev, showInfo: sections }));
-    queueSave({ showInfo: sections });
-  }
-
-  function updateDays(days) {
-    setEvent((prev) => ({ ...prev, days }));
-    queueSave({ days });
-  }
-
-  function updateContacts(contacts) {
-    setEvent((prev) => ({ ...prev, contacts }));
-    queueSave({ contacts });
+  // Auto-check "submitted production report" when the report sends. Not
+  // locked — the PM can still toggle it by hand afterward.
+  function markReportSubmitted() {
+    const entry = { done: true, doneBy: user.displayName || user.email, doneAt: Date.now() };
+    setEvent((prev) => ({
+      ...prev,
+      checklist: { ...(prev.checklist || {}), "prod-report": entry },
+    }));
+    queueSave({ "checklist.prod-report": entry });
   }
 
   async function refreshFromFlex() {
@@ -138,7 +166,6 @@ export default function EventDetail({ eventId, user, onBack }) {
     try {
       const result = await postPacketToSlack(event);
 
-      // Remember the channel so the next post reuses it instead of hunting by name.
       if (result.channelId && result.channelId !== event.slackChannelId) {
         setEvent((prev) => ({
           ...prev,
@@ -182,6 +209,7 @@ export default function EventDetail({ eventId, user, onBack }) {
     (event.days?.length || 0) > 0 ||
     (event.showInfo?.length || 0) > 0 ||
     (event.contacts?.length || 0) > 0;
+  const showPacketBar = !NO_PACKET_BAR.has(tab);
 
   return (
     <div>
@@ -277,41 +305,124 @@ export default function EventDetail({ eventId, user, onBack }) {
         </span>
       </div>
 
+      {tab === "files" && (
+        <Files
+          event={event}
+          canEdit={canEdit}
+          onFolderChange={(v) => setField("fileCloudFolder", v)}
+        />
+      )}
+
       {tab === "checklist" && (
         <Checklist event={event} canEdit={canEdit} onToggle={toggleTask} />
       )}
+
       {tab === "showinfo" && (
-        <ShowInfo sections={event.showInfo || []} canEdit={canEdit} onChange={updateShowInfo} />
-      )}
-      {tab === "days" && (
-        <DaySheets days={event.days || []} meta={meta} canEdit={canEdit} onChange={updateDays} />
-      )}
-      {tab === "contacts" && (
-        <Contacts contacts={event.contacts || []} canEdit={canEdit} onChange={updateContacts} />
+        <ShowInfo
+          sections={event.showInfo || []}
+          canEdit={canEdit}
+          onChange={(v) => setField("showInfo", v)}
+        />
       )}
 
-      <div className="packet-bar">
-        <div>
-          <div className="packet-title">Crew packet</div>
-          <div className="muted" style={{ fontSize: 12 }}>
-            {hasPacket
-              ? "Show info, contacts, and the full schedule, ready for the crew."
-              : "Add show info, contacts, or a day sheet to build the packet."}
+      {tab === "days" && (
+        <DaySheets
+          days={event.days || []}
+          meta={meta}
+          canEdit={canEdit}
+          onChange={(v) => setField("days", v)}
+        />
+      )}
+
+      {tab === "contacts" && (
+        <Contacts
+          event={event}
+          contacts={event.contacts || []}
+          canEdit={canEdit}
+          onChange={(v) => setField("contacts", v)}
+        />
+      )}
+
+      {tab === "labor" && (
+        <LaborRequest
+          event={event}
+          user={user}
+          canEdit={canEdit}
+          onChange={(v) => setField("laborRequests", v)}
+          onDraftChange={(v) => setField("laborDraft", v)}
+        />
+      )}
+
+      {tab === "po" && (
+        <PoRequest
+          event={event}
+          user={user}
+          canEdit={canEdit}
+          onChange={(v) => setField("poRequests", v)}
+          onDraftChange={(v) => setField("poDraft", v)}
+        />
+      )}
+
+      {tab === "expense" && (
+        <ExpenseSheet
+          event={event}
+          canEdit={canEdit}
+          onChange={(v) => setField("expense", v)}
+        />
+      )}
+
+      {tab === "travel" && (
+        <Travel
+          event={event}
+          canEdit={canEdit}
+          onChange={(v) => setField("travelRequests", v)}
+          onDraftChange={(v) => setField("travelDraft", v)}
+        />
+      )}
+
+      {tab === "report" && (
+        <ProductionReport
+          event={event}
+          canEdit={canEdit}
+          onChange={(v) => setField("productionReport", v)}
+          onDraftChange={(v) => setField("reportDraft", v)}
+          onSubmitted={markReportSubmitted}
+        />
+      )}
+
+      {tab === "timecards" && (
+        <Timecards
+          event={event}
+          user={user}
+          canEdit={canEdit}
+          onCrewChange={(v) => setField("shiftboardCrew", v)}
+        />
+      )}
+
+      {showPacketBar && (
+        <div className="packet-bar">
+          <div>
+            <div className="packet-title">Crew packet</div>
+            <div className="muted" style={{ fontSize: 12 }}>
+              {hasPacket
+                ? "Show info, contacts, and the full schedule, ready for the crew."
+                : "Add show info, contacts, or a day sheet to build the packet."}
+            </div>
+          </div>
+          <div className="packet-actions">
+            <button className="btn btn-sm" onClick={exportPdf} disabled={exporting || !hasPacket}>
+              {exporting ? "Building…" : "Download PDF"}
+            </button>
+            <button
+              className="btn btn-sm btn-primary"
+              onClick={sendToSlack}
+              disabled={posting || !hasPacket}
+            >
+              {posting ? "Posting…" : event.slackChannelId ? "Post update to Slack" : "Send to Slack"}
+            </button>
           </div>
         </div>
-        <div className="packet-actions">
-          <button className="btn btn-sm" onClick={exportPdf} disabled={exporting || !hasPacket}>
-            {exporting ? "Building…" : "Download PDF"}
-          </button>
-          <button
-            className="btn btn-sm btn-primary"
-            onClick={sendToSlack}
-            disabled={posting || !hasPacket}
-          >
-            {posting ? "Posting…" : event.slackChannelId ? "Post update to Slack" : "Send to Slack"}
-          </button>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

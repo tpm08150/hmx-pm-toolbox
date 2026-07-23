@@ -4,9 +4,11 @@ import { useTheme } from "./lib/useTheme";
 import EventList from "./components/EventList";
 import EventDetail from "./components/EventDetail";
 import Roster from "./components/Roster";
+import Settings from "./components/Settings";
+import Budgets from "./components/Budgets";
 
 export default function App() {
-  const [user, setUser] = useState(undefined); // undefined = checking
+  const [user, setUser] = useState(undefined); // undefined = still checking
   const [allowed, setAllowed] = useState(null);
   const [view, setView] = useState({ name: "events" });
   const [authError, setAuthError] = useState(null);
@@ -77,6 +79,18 @@ export default function App() {
         </div>
         <div className="topbar-spacer" />
         <div className="topbar-user">
+          {/* Every PM should be able to see how their shows are tracking, so
+              this one isn't behind the admin check. */}
+          {view.name !== "budgets" && (
+            <button
+              className="btn btn-ghost btn-sm"
+              onClick={() => setView({ name: "budgets" })}
+              style={{ color: "#fff" }}
+            >
+              Budgets
+            </button>
+          )}
+
           {isAdmin && view.name !== "roster" && (
             <button
               className="btn btn-ghost btn-sm"
@@ -86,6 +100,17 @@ export default function App() {
               Roster
             </button>
           )}
+
+          {isAdmin && view.name !== "settings" && (
+            <button
+              className="btn btn-ghost btn-sm"
+              onClick={() => setView({ name: "settings" })}
+              style={{ color: "#fff" }}
+            >
+              Settings
+            </button>
+          )}
+
           <button
             className="theme-toggle"
             onClick={toggle}
@@ -94,7 +119,9 @@ export default function App() {
           >
             {theme === "dark" ? "☀" : "☾"}
           </button>
+
           <span>{user.displayName || user.email}</span>
+
           <button className="btn btn-ghost btn-sm" onClick={signOut} style={{ color: "#fff" }}>
             Sign out
           </button>
@@ -109,12 +136,20 @@ export default function App() {
             onBack={() => setView({ name: "events" })}
           />
         )}
+
         {view.name === "roster" && <Roster onBack={() => setView({ name: "events" })} />}
-        {view.name === "events" && (
-          <EventList
-            user={user}
-            onOpen={(eventId) => setView({ name: "event", eventId })}
+
+        {view.name === "settings" && <Settings onBack={() => setView({ name: "events" })} />}
+
+        {view.name === "budgets" && (
+          <Budgets
+            onBack={() => setView({ name: "events" })}
+            onOpenEvent={(eventId) => setView({ name: "event", eventId })}
           />
+        )}
+
+        {view.name === "events" && (
+          <EventList user={user} onOpen={(eventId) => setView({ name: "event", eventId })} />
         )}
       </main>
     </div>
