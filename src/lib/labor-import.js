@@ -20,16 +20,24 @@ const COLUMNS = [
 const FIRST_DATA_ROW = 7;
 
 /**
- * Role names that clearly belong to one billing category. Anything else is
- * left blank for the PM — a guess that's wrong costs more than a gap that's
- * visible.
+ * What each role bills as.
+ *
+ * Hands and riggers are IATSE at different rates; the video positions we hire
+ * out are contractors. Everything else is our own crew, so Harvest is the
+ * default rather than a blank a PM has to fill in thirty times.
  */
 const ROLE_CATEGORIES = [
-  { match: /^hands?$/i, category: "hands" },
-  { match: /^loaders?$/i, category: "hands" },
+  { match: /^(hands?|loaders?|fork\s*op)$/i, category: "hands" },
   { match: /^(up|down|lead)\s*rigger$/i, category: "riggers" },
   { match: /^riggers?$/i, category: "riggers" },
+  {
+    match: /^(v1|v2|switcher\s*op|camera\s*op|prompter\s*op|e2\s*\/?\s*spyder\s*op)$/i,
+    category: "contractors",
+  },
 ];
+
+/** Where a role with no rule lands. */
+export const DEFAULT_CATEGORY = "harvest";
 
 export function categoryForRole(role) {
   const name = String(role || "").trim();
@@ -37,7 +45,7 @@ export function categoryForRole(role) {
   for (const rule of ROLE_CATEGORIES) {
     if (rule.match.test(name)) return rule.category;
   }
-  return "";
+  return DEFAULT_CATEGORY;
 }
 
 /**
@@ -107,6 +115,7 @@ export async function parseLaborFile(file) {
   return {
     shifts,
     crewName: firstNonEmpty(shifts.map((s) => s.crew)) || "",
+    // Only a row with no role at all comes through uncategorized now.
     uncategorized: shifts.filter((s) => !s.category).length,
     earliest: shifts.reduce((a, s) => (!a || s.date < a ? s.date : a), null),
   };

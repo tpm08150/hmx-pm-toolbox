@@ -8,6 +8,7 @@
  * drifting shows it early rather than at closeout.
  */
 import { summarizeShifts, costOf, CATEGORY_IDS } from "./overtime";
+import { perDiemTotal } from "./travel";
 
 /** Which expense block a PO lands in, by account code. */
 export const PO_ACCOUNT_ROUTING = {
@@ -25,6 +26,8 @@ export const PO_ACCOUNT_ROUTING = {
   "5547": "rentalServices",
   "4729": "rentalServices",
   "4795": "rentalServices",
+  // Trucking, whether it's a hired truck or a quoted haul
+  "4730": "trucking",
   // Labor that isn't ours
   "4640": "labor",
   "4650": "labor",
@@ -50,7 +53,8 @@ export function blankExpense() {
       actualHours: {},
       overrideEstimate: false,
     },
-    trucking: { trucks: 0, days: 0, miles: 0 },
+    // The formula covers our own trucks; a quoted haul goes in `lines`.
+    trucking: { trucks: 0, days: 0, miles: 0, lines: [] },
     venue: "",
     notes: "",
   };
@@ -94,11 +98,12 @@ export function derive({ event, settings }) {
   const sent = event.poRequests || [];
   const poEquipment = [];
   const poServices = [];
+  const poTrucking = [];
   const dismissed = [];
 
   for (const po of sent) {
     const route = routeForAccount(po.accountCode);
-    if (route !== "equipment" && route !== "rentalServices") continue;
+    if (route !== "equipment" && route !== "rentalServices" && route !== "trucking") continue;
 
     const adj = adjustments[po.id] || {};
     const line = {
@@ -117,10 +122,42 @@ export function derive({ event, settings }) {
       dismissed.push(line);
       continue;
     }
-    (route === "equipment" ? poEquipment : poServices).push(line);
+    if (route === "equipment") poEquipment.push(line);
+    else if (route === "trucking") poTrucking.push(line);
+    else poServices.push(line);
   }
 
   const keepManual = (list) => (list || []).filter((l) => l.source !== "po");
+
+  // ── Per diem ──────────────────────────────────────────────────────────
+  // Requests add up rather than superseding — a second one usually means a
+  // traveler was added, not that the first was wrong. Flights and hotels stay
+  // out of it; their cost isn't known until someone books them.
+  const perDiemLines = [];
+  const rate = Number(settings?.perDiemRate) || 59.5;
+
+  for (const request of event.travelRequests || []) {
+    if (!request.types?.perDiem) continue;
+
+    let amount = 0;
+    let people = 0;
+    for (const t of request.travelers || []) {
+      if (!t.name?.trim()) continue;
+      const total = perDiemTotal(t.departureDate, t.returnDate, rate);
+      if (total == null) continue;
+      amount += total;
+      people += 1;
+    }
+
+    if (!amount) continue;
+    perDiemLines.push({
+      id: `perdiem-${request.id}`,
+      vendor: `Per diem — ${people} ${people === 1 ? "traveler" : "travelers"}`,
+      cost: amount,
+      source: "perdiem",
+      sentAt: request.sentAt,
+    });
+  }
 
   // ── Labor estimate ────────────────────────────────────────────────────
   // The latest request is the current plan; earlier ones were superseded.
@@ -137,11 +174,23 @@ export function derive({ event, settings }) {
     estimate.uncategorizedHours = summary.uncategorizedHours;
   }
 
+  const truckingLines = [
+    ...((stored.trucking?.lines || []).filter((l) => l.source !== "po")),
+    ...poTrucking,
+  ];
+
   return {
     ...stored,
+    trucking: { ...blankExpense().trucking, ...stored.trucking, lines: truckingLines },
     contracts,
     equipment: [...keepManual(stored.equipment), ...poEquipment],
-    rentalServices: [...keepManual(stored.rentalServices), ...poServices],
+    rentalServices: [
+      ...(stored.rentalServices || []).filter(
+        (l) => l.source !== "po" && l.source !== "perdiem"
+      ),
+      ...poServices,
+      ...perDiemLines,
+    ],
     dismissedPoLines: dismissed,
     laborEstimate: estimate,
   };
@@ -189,7 +238,10 @@ export function calculate({ sheet, settings }) {
   const truckDays = (Number(t.trucks) || 0) * (Number(t.days) || 0) * dayRate;
   const miles = Number(t.miles) || 0;
   const mileage = miles * fuelPerMile + (miles / mpg) * fuelPrice;
-  const truckingTotal = truckDays + mileage;
+  // A quoted haul sits alongside our own trucks rather than replacing them —
+  // a show often has both.
+  const truckingQuoted = sum(t.lines, "cost");
+  const truckingTotal = truckDays + mileage + truckingQuoted;
 
   // ── Commission ────────────────────────────────────────────────────────
   const venue = commissionVenues.find(
@@ -232,6 +284,7 @@ export function calculate({ sheet, settings }) {
     truckingTotal,
     truckDays,
     mileage,
+    truckingQuoted,
     hardCost,
     hardCostPct,
     commissionable,

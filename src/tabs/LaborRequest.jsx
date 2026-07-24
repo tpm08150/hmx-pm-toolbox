@@ -147,8 +147,10 @@ export default function LaborRequest({ event, user, canEdit, onChange, onDraftCh
     setNotice(
       `Imported ${moved.length} shift${moved.length === 1 ? "" : "s"} from ${pendingImport.filename}.` +
         (missing
-          ? ` ${missing} need${missing === 1 ? "s" : ""} a labor category before they'll be estimated.`
-          : "")
+          ? ` ${missing} need${missing === 1 ? "s" : ""} a labor category before ${
+              missing === 1 ? "it counts" : "they count"
+            } toward the estimate.`
+          : " Check the categories before sending — anything not a hand, rigger, or outside video position came in as Harvest.")
     );
     setPendingImport(null);
   }
@@ -263,8 +265,9 @@ export default function LaborRequest({ event, user, canEdit, onChange, onDraftCh
             keeping the gaps between days.
             {pendingImport.uncategorized > 0 && (
               <> {pendingImport.uncategorized} row
-                {pendingImport.uncategorized === 1 ? "" : "s"} couldn't be matched to a labor
-                category and will need one set by hand.</>
+                {pendingImport.uncategorized === 1 ? " has" : "s have"} no role, so
+                {pendingImport.uncategorized === 1 ? " it needs" : " they need"} a labor
+                category set by hand.</>
             )}
           </p>
 

@@ -33,7 +33,13 @@ export default function ExpenseSheet({ event, canEdit, onChange }) {
       ...stored,
       contracts: stored.contracts.filter((c) => c.source !== "flex"),
       equipment: stored.equipment.filter((l) => l.source !== "po"),
-      rentalServices: stored.rentalServices.filter((l) => l.source !== "po"),
+      rentalServices: stored.rentalServices.filter(
+        (l) => l.source !== "po" && l.source !== "perdiem"
+      ),
+      trucking: {
+        ...stored.trucking,
+        lines: (stored.trucking?.lines || []).filter((l) => l.source !== "po"),
+      },
     });
   }
 
@@ -59,6 +65,38 @@ export default function ExpenseSheet({ event, canEdit, onChange }) {
       poAdjustments: {
         ...sheet.poAdjustments,
         [poId]: { ...sheet.poAdjustments?.[poId], ...patch },
+      },
+    });
+  }
+
+  function addTruckLine() {
+    save({
+      trucking: {
+        ...sheet.trucking,
+        lines: [
+          ...(sheet.trucking.lines || []),
+          { id: crypto.randomUUID(), vendor: "", cost: 0, source: "manual" },
+        ],
+      },
+    });
+  }
+
+  function updateTruckLine(id, patch) {
+    save({
+      trucking: {
+        ...sheet.trucking,
+        lines: (sheet.trucking.lines || []).map((l) =>
+          l.id === id ? { ...l, ...patch } : l
+        ),
+      },
+    });
+  }
+
+  function removeTruckLine(id) {
+    save({
+      trucking: {
+        ...sheet.trucking,
+        lines: (sheet.trucking.lines || []).filter((l) => l.id !== id),
       },
     });
   }
@@ -100,13 +138,21 @@ export default function ExpenseSheet({ event, canEdit, onChange }) {
   /** One vendor and cost, whether it came from a PO or was typed in. */
   function CostRow({ block, line }) {
     const isPo = line.source === "po";
+    const isPerDiem = line.source === "perdiem";
+    const derived = isPo || isPerDiem;
+
     return (
-      <tr className={isPo ? "row-derived" : ""}>
+      <tr className={derived ? "row-derived" : ""}>
         <td>
-          {isPo ? (
+          {derived ? (
             <span className="line-name">
               <span className="line-text">{line.vendor || "—"}</span>
-              <span className="src-tag" title={`PO ${line.code}`}>{line.code || "PO"}</span>
+              <span
+                className="src-tag"
+                title={isPo ? `PO ${line.code}` : "From a travel request"}
+              >
+                {isPo ? line.code || "PO" : "Travel"}
+              </span>
               {line.adjusted && (
                 <span className="src-tag adj-tag" title={`Ordered at ${money(line.originalCost)}`}>
                   adj
@@ -124,19 +170,25 @@ export default function ExpenseSheet({ event, canEdit, onChange }) {
           )}
         </td>
         <td className="col-money">
-          <MoneyInput
-            value={line.cost}
-            ariaLabel="Cost"
-            disabled={!canEdit}
-            onCommit={(v) =>
-              isPo
-                ? adjustPo(line.poId, { cost: v })
-                : updateLine(block, line.id, { cost: v })
-            }
-          />
+          {/* Per diem is computed from the request's dates and the current
+              rate, so correcting it here would just be overwritten. */}
+          {isPerDiem ? (
+            <span className="mono num derived-value">{money(line.cost)}</span>
+          ) : (
+            <MoneyInput
+              value={line.cost}
+              ariaLabel="Cost"
+              disabled={!canEdit}
+              onCommit={(v) =>
+                isPo
+                  ? adjustPo(line.poId, { cost: v })
+                  : updateLine(block, line.id, { cost: v })
+              }
+            />
+          )}
         </td>
         <td className="col-x">
-          {canEdit && (
+          {canEdit && !isPerDiem && (
             <button
               className="btn btn-ghost btn-sm btn-danger"
               title={isPo ? "Leave this PO off the sheet" : "Remove"}
@@ -310,7 +362,9 @@ export default function ExpenseSheet({ event, canEdit, onChange }) {
               </button>
             )}
           </header>
-          <p className="exp-note">Comes off revenue before anything else.</p>
+          <p className="exp-note">
+            Comes off revenue before anything else. Per diem lands here from travel requests.
+          </p>
 
           {!sheet.rentalServices.length ? (
             <p className="exp-empty">Nothing yet.</p>
@@ -330,6 +384,11 @@ export default function ExpenseSheet({ event, canEdit, onChange }) {
           <header className="exp-head">
             <h2>Trucking</h2>
             <span className="exp-total mono">{money(totals.truckingTotal)}</span>
+            {canEdit && (
+              <button className="btn btn-sm" onClick={addTruckLine}>
+                Add
+              </button>
+            )}
           </header>
 
           <div className="truck-grid">
@@ -379,6 +438,81 @@ export default function ExpenseSheet({ event, canEdit, onChange }) {
             <span className="muted">Fuel &amp; mileage</span>
             <span className="mono">{money(totals.mileage)}</span>
           </div>
+
+          {(sheet.trucking.lines || []).length > 0 && (
+            <>
+              <div className="subblock" style={{ marginTop: 10 }}>
+                <span className="eyebrow">Quoted &amp; hired</span>
+              </div>
+              <table className="exp-table">
+                <tbody>
+                  {sheet.trucking.lines.map((l) => (
+                    <tr key={l.id} className={l.source === "po" ? "row-derived" : ""}>
+                      <td>
+                        {l.source === "po" ? (
+                          <span className="line-name">
+                            <span className="line-text">{l.vendor || "—"}</span>
+                            <span className="src-tag" title={`PO ${l.code}`}>
+                              {l.code || "PO"}
+                            </span>
+                            {l.adjusted && (
+                              <span
+                                className="src-tag adj-tag"
+                                title={`Ordered at ${money(l.originalCost)}`}
+                              >
+                                adj
+                              </span>
+                            )}
+                          </span>
+                        ) : (
+                          <TextInput
+                            value={l.vendor}
+                            placeholder="Vendor or description"
+                            ariaLabel="Trucking vendor"
+                            disabled={!canEdit}
+                            onCommit={(v) => updateTruckLine(l.id, { vendor: v })}
+                          />
+                        )}
+                      </td>
+                      <td className="col-money">
+                        <MoneyInput
+                          value={l.cost}
+                          ariaLabel="Trucking cost"
+                          disabled={!canEdit}
+                          onCommit={(v) =>
+                            l.source === "po"
+                              ? adjustPo(l.poId, { cost: v })
+                              : updateTruckLine(l.id, { cost: v })
+                          }
+                        />
+                      </td>
+                      <td className="col-x">
+                        {canEdit && (
+                          <button
+                            className="btn btn-ghost btn-sm btn-danger"
+                            title={
+                              l.source === "po" ? "Leave this PO off the sheet" : "Remove"
+                            }
+                            onClick={() =>
+                              l.source === "po"
+                                ? adjustPo(l.poId, { dismissed: true })
+                                : removeTruckLine(l.id)
+                            }
+                          >
+                            ×
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="exp-foot">
+                <span className="muted">Quoted</span>
+                <span className="mono">{money(totals.truckingQuoted)}</span>
+              </div>
+            </>
+          )}
         </section>
 
         {/* ── Labor ───────────────────────────────────────────────────── */}
